@@ -56,6 +56,13 @@ contract KYCDeFiLayer {
         require(stableToken.transfer(msg.sender, amount), "Withdraw failed");
     }
 
+    /// Универсальный метод взаимодействия с DeFi-протоколами
+    function callDeFi(address target, bytes calldata data) external {
+        require(_hasKYC(msg.sender), "KYC required");
+        (bool success, bytes memory returnData) = target.call(data);
+        require(success, "DeFi call failed");
+    }
+
     function _hasKYC(address user) internal view returns (bool) {
         return
             verifier.isProofVerified(user, BASIC_KYC_REQUEST_ID) ||

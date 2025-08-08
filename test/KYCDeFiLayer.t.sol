@@ -161,4 +161,32 @@ contract KYCDeFiLayerTest is Test {
         assert(layer.BASIC_KYC_REQUEST_ID() == 1);
         assert(layer.ADVANCED_KYC_REQUEST_ID() == 2);
     }
+    function test_CallDeFiWithKYC() public {
+    verifier.setAdvanced(user, true);
+    MockDeFi defi = new MockDeFi();
+
+    vm.startPrank(user);
+    layer.callDeFi(address(defi), abi.encodeWithSignature("doSomething()"));
+    vm.stopPrank();
+
+    assertTrue(defi.called(), "DeFi call should succeed");
+    }
+
+    function test_CallDeFiWithoutKYC() public {
+    MockDeFi defi = new MockDeFi();
+
+    vm.startPrank(user);
+    vm.expectRevert(bytes("KYC required"));
+    layer.callDeFi(address(defi), abi.encodeWithSignature("doSomething()"));
+    vm.stopPrank();
+    }
 }
+
+contract MockDeFi {
+    bool public called;
+
+    function doSomething() external {
+        called = true;
+    }
+}
+
